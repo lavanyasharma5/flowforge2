@@ -1,0 +1,133 @@
+version: "3.9"
+
+services:
+
+  # ── Ollama — local LLM server (replaces Gemini) ────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: operon-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - operon-net
+    restart: unless-stopped
+    # GPU support (uncomment if you have NVIDIA GPU + nvidia-container-toolkit):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ── Model puller — pulls llama3.2 on first start ───────────────────────────
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: operon-ollama-pull
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - operon-net
+    entrypoint: >
+      sh -c "ollama pull ${OLLAMA_MODEL:-llama3.2} && echo 'Model ready.'"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    restart: "no"
+
+  # ── Sandbox container ──────────────────────────────────────────────────────
+  sandbox:
+    build:
+      context: ./sandbox
+    container_name: operon-sandbox
+    working_dir: /workspace
+    volumes:
+      - ./workspace:/workspace
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    networks:
+      - operon-net
+
+  # ── MCP Server (Python FastAPI) ────────────────────────────────────────────
+  mcp-server:
+    build:
+      context: ./mcp-server
+    container_name: operon-mcp
+    ports:
+      - "8000:8000"
+    environment:
+      - SANDBOX_MODE=docker
+      - SIMULATED_ROOT=/tmp/operon-sandbox
+      - DB_PATH=/app/data/audit.db
+    volumes:
+      - mcp_data:/app/data
+      - ./workspace:/tmp/operon-sandbox
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - operon-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ── Orchestrator (Node.js Express + SSE) ──────────────────────────────────
+  orchestrator:
+    build:
+      context: ./orchestrator
+    container_name: operon-orchestrator
+    ports:
+      - "3001:3001"
+    environment:
+      - MCP_SERVER_URL=http://mcp-server:8000
+      - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2}
+      - PORT=3001
+      - NODE_ENV=production
+    depends_on:
+      mcp-server:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    networks:
+      - operon-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ── Frontend (React SPA served by nginx) ──────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+    container_name: operon-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      orchestrator:
+        condition: service_healthy
+    networks:
+      - operon-net
+    restart: unless-stopped
+
+volumes:
+  mcp_data:
+  ollama_data:      # persists downloaded models across restarts
+
+networks:
+  operon-net:
+    driver: bridge

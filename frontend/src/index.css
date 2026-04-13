@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-surface-dim: #d1dce0;
+  --color-on-tertiary-fixed-variant: #f9f7ff;
+  --color-primary-container: #e2e2e2;
+  --color-on-tertiary-container: #000000;
+  --color-surface-tint: #5e5e5e;
+  --color-surface: #f8f9fa;
+  --color-outline: #737c7f;
+  --color-surface-bright: #f8f9fa;
+  --color-surface-container-low: #f1f4f6;
+  --color-primary: #5e5e5e;
+  --color-on-secondary-fixed-variant: #525c6a;
+  --color-on-error-container: #752121;
+  --color-background: #f8f9fa;
+  --color-primary-fixed-dim: #d4d4d4;
+  --color-outline-variant: #abb3b7;
+  --color-on-primary-fixed-variant: #5b5b5b;
+  --color-secondary-fixed-dim: #cbd5e6;
+  --color-inverse-primary: #ffffff;
+  --color-on-primary-fixed: #3f3f3f;
+  --color-secondary-dim: #4a5462;
+  --color-inverse-on-surface: #9b9d9e;
+  --color-tertiary-fixed-dim: #2d68f0;
+  --color-error-container: #fe8983;
+  --color-tertiary: #0053dc;
+  --color-on-surface: #2b3437;
+  --color-error-dim: #4e0309;
+  --color-on-error: #fff7f6;
+  --color-inverse-surface: #0c0f10;
+  --color-tertiary-container: #3e76fe;
+  --color-primary-fixed: #e2e2e2;
+  --color-surface-container-lowest: #ffffff;
+  --color-on-surface-variant: #586064;
+  --color-on-tertiary: #faf8ff;
+  --color-tertiary-dim: #0049c2;
+  --color-primary-dim: #525252;
+  --color-secondary: #56606e;
+  --color-on-background: #2b3437;
+  --color-on-secondary: #f7f9ff;
+  --color-surface-variant: #dbe4e7;
+  --color-surface-container-highest: #dbe4e7;
+  --color-on-secondary-container: #485260;
+  --color-secondary-fixed: #d9e3f4;
+  --color-surface-container: #eaeff1;
+  --color-on-primary: #f8f8f8;
+  --color-secondary-container: #d9e3f4;
+  --color-on-tertiary-fixed: #ffffff;
+  --color-on-primary-container: #525252;
+  --color-tertiary-fixed: #3e76fe;
+  --color-error: #9f403d;
+  --color-on-secondary-fixed: #36404d;
+  --color-surface-container-high: #e2e9ec;
+
+  --radius-DEFAULT: 0.125rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-full: 0.75rem;
+
+  --font-headline: 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-label: 'Inter', sans-serif;
+}
+
+body { 
+  font-family: 'Inter', sans-serif; 
+  -webkit-font-smoothing: antialiased; 
+}
+
+.material-symbols-outlined { 
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; 
+}
+
+.workflow-dot { 
+  width: 8px; height: 8px; border-radius: 50%; 
+}
+
+.ghost-border { 
+  border: 1px solid rgba(171, 179, 183, 0.15); 
+}
+
+/* Base tailwind hiding overrides for our old styles (if any sneak in) */
+* {
+  --xy-node-background-color: transparent !important;
+  --xy-node-border: none !important;
+}
+
+/* Custom ReactFlow node wrapper override to hide the default handles if needed, though we will explicitly manage them */
+.react-flow__node {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
